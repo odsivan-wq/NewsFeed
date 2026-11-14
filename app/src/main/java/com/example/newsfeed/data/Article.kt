@@ -8,5 +8,8 @@ data class Article(
     val description: String,
     val imageUrl: String?,
     val sourceName: String,
-    val publishedAt: String
+    val publishedAt: String,
+    // ці два поля заповнені лише для збережених статей (офлайн-копія)
+    val fullText: String? = null,
+    val localImagePath: String? = null
 ) : Serializable

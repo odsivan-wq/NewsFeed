@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.newsfeed.R
 import com.example.newsfeed.data.Article
+import java.io.File
 
 private object ArticleDiff : DiffUtil.ItemCallback<Article>() {
     override fun areItemsTheSame(a: Article, b: Article) = a.url == b.url
@@ -40,9 +41,12 @@ class ArticleAdapter(
         holder.meta.text = "${article.sourceName} • ${article.publishedAt}"
         holder.description.text = article.description
 
-        if (article.imageUrl != null) {
+        // для збережених статей беремо картинку з пам'яті телефона, інакше з інтернету
+        val localImage = article.localImagePath?.let { File(it) }?.takeIf { it.exists() }
+        val imageSource: Any? = localImage ?: article.imageUrl
+        if (imageSource != null) {
             holder.image.visibility = View.VISIBLE
-            Glide.with(holder.image).load(article.imageUrl).into(holder.image)
+            Glide.with(holder.image).load(imageSource).into(holder.image)
         } else {
             holder.image.visibility = View.GONE
         }

@@ -52,11 +52,30 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/statusText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/fullText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:lineSpacingMultiplier="1.2"
+                android:textIsSelectable="true"
+                android:textSize="16sp"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/hint"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:text="Це короткий опис від NewsAPI. Повний текст статті є на сайті джерела."
+                android:text="Це короткий опис від NewsAPI. Збережи статтю, і повний текст стане доступним без інтернету."
                 android:textSize="13sp" />
 
             <Button
@@ -65,6 +84,14 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:text="Зберегти для читання офлайн" />
+
+            <Button
+                android:id="@+id/retryButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Спробувати завантажити текст ще раз"
+                android:visibility="gone" />
 
             <Button
                 android:id="@+id/openButton"

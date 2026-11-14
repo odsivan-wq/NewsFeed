@@ -27,19 +27,22 @@ class MainActivity : AppCompatActivity() {
         ArticleDetailActivity.start(this, article)
     }
 
-    // назва вкладки -> запит до API
+    // назва вкладки -> запит до API (OR шукає статті з будь-яким із слів)
     private val categories = listOf(
         "Технології" to "technology",
         "Спорт" to "sport",
         "Бізнес" to "business",
         "Здоров'я" to "health",
         "Наука" to "science",
-        "Розваги" to "entertainment"
+        "Розваги" to "entertainment",
+        "Готування" to "cooking OR recipes",
+        "Подорожі" to "travel",
+        "Ігри" to "\"video games\""
     )
 
-    // остання вкладка «Збережені» має індекс одразу після всіх категорій
+    // перша вкладка (індекс 0) — «Збережені», далі йдуть категорії
     private val isSavedTab: Boolean
-        get() = viewModel.selectedIndex == categories.size
+        get() = viewModel.selectedIndex == 0
 
     private lateinit var swipe: SwipeRefreshLayout
     private lateinit var messageBox: View
@@ -48,7 +51,7 @@ class MainActivity : AppCompatActivity() {
 
     // завантажуємо новини з інтернету (лише для вкладок-категорій)
     private fun reload() {
-        if (!isSavedTab) viewModel.load(categories[viewModel.selectedIndex].second)
+        if (!isSavedTab) viewModel.load(categories[viewModel.selectedIndex - 1].second)
     }
 
     private fun showMessage(text: String, withRetry: Boolean) {
@@ -116,9 +119,9 @@ class MainActivity : AppCompatActivity() {
         list.layoutManager = LinearLayoutManager(this)
         list.adapter = adapter
 
-        // вкладки: усі категорії + «Збережені»
+        // вкладки: спочатку «Збережені» з іконкою, потім усі категорії
+        tabs.addTab(tabs.newTab().setText("Збережені").setIcon(R.drawable.ic_bookmark))
         categories.forEach { tabs.addTab(tabs.newTab().setText(it.first)) }
-        tabs.addTab(tabs.newTab().setText("Збережені"))
         // вибираємо вкладку ДО додавання слухача, щоб не викликати зайвий запит
         tabs.getTabAt(viewModel.selectedIndex)?.select()
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {

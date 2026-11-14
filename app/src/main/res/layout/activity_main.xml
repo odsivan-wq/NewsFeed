@@ -10,6 +10,7 @@
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        app:tabInlineLabel="true"
         app:tabMode="scrollable" />
 
     <FrameLayout
@@ -30,23 +31,27 @@
 
         <LinearLayout
             android:id="@+id/messageBox"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:gravity="center"
             android:orientation="vertical"
+            android:padding="24dp"
             android:visibility="gone">
 
             <TextView
                 android:id="@+id/messageText"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:gravity="center"
+                android:textAlignment="center"
                 android:textSize="16sp" />
 
             <Button
                 android:id="@+id/retryButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
                 android:text="Спробувати знову" />
         </LinearLayout>
     </FrameLayout>

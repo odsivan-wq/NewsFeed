@@ -13,12 +13,12 @@ data class SavedArticleEntity(
     val sourceName: String,
     val publishedAt: String,
     val savedAt: Long,
-    // ці два поля заповнимо на наступному кроці (повний текст і картинка для офлайну)
+    // офлайн-копія: повний текст статті і шлях до картинки у пам'яті телефона
     val fullText: String? = null,
     val localImagePath: String? = null
 )
 
-// Перетворення статті зі стрічки на запис для бази
+// Перетворення статті на запис для бази
 fun Article.toEntity() = SavedArticleEntity(
     url = url,
     title = title,
@@ -26,7 +26,9 @@ fun Article.toEntity() = SavedArticleEntity(
     imageUrl = imageUrl,
     sourceName = sourceName,
     publishedAt = publishedAt,
-    savedAt = System.currentTimeMillis()
+    savedAt = System.currentTimeMillis(),
+    fullText = fullText,
+    localImagePath = localImagePath
 )
 
 // Перетворення запису з бази назад на статтю
@@ -36,5 +38,7 @@ fun SavedArticleEntity.toArticle() = Article(
     description = description,
     imageUrl = imageUrl,
     sourceName = sourceName,
-    publishedAt = publishedAt
+    publishedAt = publishedAt,
+    fullText = fullText,
+    localImagePath = localImagePath
 )

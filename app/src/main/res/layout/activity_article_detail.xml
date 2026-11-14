@@ -60,10 +60,17 @@
                 android:textSize="13sp" />
 
             <Button
-                android:id="@+id/openButton"
+                android:id="@+id/saveButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
+                android:text="Зберегти для читання офлайн" />
+
+            <Button
+                android:id="@+id/openButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="Відкрити оригінал на сайті" />
         </LinearLayout>
     </ScrollView>

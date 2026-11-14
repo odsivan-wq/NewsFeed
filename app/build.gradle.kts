@@ -2,6 +2,7 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
 }
 
 // читаємо ключ з local.properties (цей файл не потрапляє на GitHub)
@@ -55,17 +56,22 @@ dependencies {
     implementation(libs.material)
 
     // мережа
-    implementation("com.squareup.retrofit2:retrofit:3.0.0")
-    implementation("com.squareup.retrofit2:converter-gson:3.0.0")
+    implementation(libs.retrofit.core)
+    implementation(libs.retrofit.converter.gson)
 
     // ViewModel і LiveData
-    implementation("androidx.lifecycle:lifecycle-viewmodel:2.11.0")
-    implementation("androidx.lifecycle:lifecycle-livedata:2.11.0")
+    implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.livedata)
 
     // список, оновлення свайпом, картинки
-    implementation("androidx.recyclerview:recyclerview:1.4.0")
-    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.2.0")
-    implementation("com.github.bumptech.glide:glide:5.0.5")
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.androidx.swiperefreshlayout)
+    implementation(libs.glide)
+
+    // база даних Room (KSP генерує код для @Dao та @Database)
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)

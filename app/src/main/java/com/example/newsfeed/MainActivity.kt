@@ -37,7 +37,64 @@ class MainActivity : AppCompatActivity() {
         "Розваги" to "entertainment"
     )
 
-    private fun reload() = viewModel.load(categories[viewModel.selectedIndex].second)
+    // остання вкладка «Збережені» має індекс одразу після всіх категорій
+    private val isSavedTab: Boolean
+        get() = viewModel.selectedIndex == categories.size
+
+    private lateinit var swipe: SwipeRefreshLayout
+    private lateinit var messageBox: View
+    private lateinit var messageText: TextView
+    private lateinit var retryButton: Button
+
+    // завантажуємо новини з інтернету (лише для вкладок-категорій)
+    private fun reload() {
+        if (!isSavedTab) viewModel.load(categories[viewModel.selectedIndex].second)
+    }
+
+    private fun showMessage(text: String, withRetry: Boolean) {
+        messageText.text = text
+        retryButton.visibility = if (withRetry) View.VISIBLE else View.GONE
+        messageBox.visibility = View.VISIBLE
+    }
+
+    // малюємо екран: або збережені статті з бази, або результат запиту до API
+    private fun render() {
+        if (isSavedTab) {
+            swipe.isEnabled = false
+            swipe.isRefreshing = false
+            val saved = viewModel.saved.value.orEmpty()
+            adapter.submitList(saved)
+            if (saved.isEmpty()) {
+                showMessage("Немає збережених статей", withRetry = false)
+            } else {
+                messageBox.visibility = View.GONE
+            }
+            return
+        }
+
+        swipe.isEnabled = true
+        when (val state = viewModel.state.value) {
+            null -> Unit // ще нічого не завантажено
+            is FeedState.Loading -> {
+                swipe.isRefreshing = true
+                messageBox.visibility = View.GONE
+            }
+            is FeedState.Success -> {
+                swipe.isRefreshing = false
+                adapter.submitList(state.articles)
+                if (state.articles.isEmpty()) {
+                    showMessage("Нічого не знайдено", withRetry = true)
+                } else {
+                    messageBox.visibility = View.GONE
+                }
+            }
+            is FeedState.Error -> {
+                swipe.isRefreshing = false
+                adapter.submitList(emptyList())
+                showMessage(state.message, withRetry = true)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,22 +107,24 @@ class MainActivity : AppCompatActivity() {
         }
 
         val tabs = findViewById<TabLayout>(R.id.tabs)
-        val swipe = findViewById<SwipeRefreshLayout>(R.id.swipe)
         val list = findViewById<RecyclerView>(R.id.list)
-        val messageBox = findViewById<View>(R.id.messageBox)
-        val messageText = findViewById<TextView>(R.id.messageText)
-        val retryButton = findViewById<Button>(R.id.retryButton)
+        swipe = findViewById(R.id.swipe)
+        messageBox = findViewById(R.id.messageBox)
+        messageText = findViewById(R.id.messageText)
+        retryButton = findViewById(R.id.retryButton)
 
         list.layoutManager = LinearLayoutManager(this)
         list.adapter = adapter
 
+        // вкладки: усі категорії + «Збережені»
         categories.forEach { tabs.addTab(tabs.newTab().setText(it.first)) }
+        tabs.addTab(tabs.newTab().setText("Збережені"))
         // вибираємо вкладку ДО додавання слухача, щоб не викликати зайвий запит
         tabs.getTabAt(viewModel.selectedIndex)?.select()
         tabs.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
             override fun onTabSelected(tab: TabLayout.Tab) {
                 viewModel.selectedIndex = tab.position
-                reload()
+                if (isSavedTab) render() else reload()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab) {}
@@ -75,32 +134,11 @@ class MainActivity : AppCompatActivity() {
         swipe.setOnRefreshListener { reload() }
         retryButton.setOnClickListener { reload() }
 
-        viewModel.state.observe(this) { state ->
-            when (state) {
-                is FeedState.Loading -> {
-                    swipe.isRefreshing = true
-                    messageBox.visibility = View.GONE
-                }
-                is FeedState.Success -> {
-                    swipe.isRefreshing = false
-                    adapter.submitList(state.articles)
-                    if (state.articles.isEmpty()) {
-                        messageText.text = "Нічого не знайдено"
-                        messageBox.visibility = View.VISIBLE
-                    } else {
-                        messageBox.visibility = View.GONE
-                    }
-                }
-                is FeedState.Error -> {
-                    swipe.isRefreshing = false
-                    adapter.submitList(emptyList())
-                    messageText.text = state.message
-                    messageBox.visibility = View.VISIBLE
-                }
-            }
-        }
+        // будь-яка зміна даних (новини або база) перемальовує екран
+        viewModel.state.observe(this) { render() }
+        viewModel.saved.observe(this) { render() }
 
         // перший запуск: завантажуємо першу категорію
-        if (viewModel.state.value == null) reload()
+        if (viewModel.state.value == null && !isSavedTab) reload()
     }
 }

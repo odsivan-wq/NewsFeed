@@ -1,20 +1,30 @@
 package com.example.newsfeed.ui
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.newsfeed.data.AppDatabase
+import com.example.newsfeed.data.Article
 import com.example.newsfeed.data.NewsRepository
+import com.example.newsfeed.data.SavedArticlesRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class FeedViewModel : ViewModel() {
+class FeedViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = NewsRepository()
+    private val savedRepository =
+        SavedArticlesRepository(AppDatabase.get(application).savedArticleDao())
+
     private val _state = MutableLiveData<FeedState>()
     val state: LiveData<FeedState> = _state
+
+    // збережені статті з бази (доступні без інтернету)
+    val saved: LiveData<List<Article>> = savedRepository.saved
 
     // вибрана вкладка (щоб не губилась при повороті екрана)
     var selectedIndex = 0
@@ -36,7 +46,9 @@ class FeedViewModel : ViewModel() {
                     }
                 )
             } catch (e: IOException) {
-                _state.value = FeedState.Error("Немає з'єднання з інтернетом")
+                _state.value = FeedState.Error(
+                    "Немає з'єднання з інтернетом. Збережені статті доступні у вкладці «Збережені»"
+                )
             }
         }
     }

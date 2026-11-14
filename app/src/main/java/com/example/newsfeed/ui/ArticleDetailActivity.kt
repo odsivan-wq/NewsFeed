@@ -11,6 +11,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.IntentCompat
 import androidx.core.view.ViewCompat
@@ -20,6 +21,8 @@ import com.example.newsfeed.R
 import com.example.newsfeed.data.Article
 
 class ArticleDetailActivity : AppCompatActivity() {
+
+    private val viewModel: DetailViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,6 +46,7 @@ class ArticleDetailActivity : AppCompatActivity() {
         val meta = findViewById<TextView>(R.id.meta)
         val description = findViewById<TextView>(R.id.description)
         val backButton = findViewById<Button>(R.id.backButton)
+        val saveButton = findViewById<Button>(R.id.saveButton)
         val openButton = findViewById<Button>(R.id.openButton)
 
         title.text = article.title
@@ -57,6 +61,16 @@ class ArticleDetailActivity : AppCompatActivity() {
         }
 
         backButton.setOnClickListener { finish() }
+
+        // кнопка "Зберегти" змінює напис залежно від того, чи є стаття в базі
+        var currentlySaved = false
+        viewModel.isSaved(article.url).observe(this) { saved ->
+            currentlySaved = saved
+            saveButton.text = if (saved) "Видалити зі збережених" else "Зберегти для читання офлайн"
+        }
+        saveButton.setOnClickListener {
+            viewModel.toggleSaved(article, currentlySaved)
+        }
 
         // відкриваємо оригінальну статтю в браузері
         openButton.setOnClickListener {

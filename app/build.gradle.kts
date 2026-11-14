@@ -76,6 +76,9 @@ dependencies {
     // розбір HTML-сторінок статей для офлайн-тексту
     implementation(libs.jsoup)
 
+    // переклад тексту на самому телефоні (Google ML Kit)
+    implementation(libs.mlkit.translate)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

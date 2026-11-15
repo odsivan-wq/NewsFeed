@@ -1,7 +1,6 @@
 package com.example.newsfeed.data
 
 import com.google.mlkit.common.model.DownloadConditions
-import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
 import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
@@ -9,17 +8,23 @@ import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-// Мови, які можна вибрати для перекладу: назва на екрані -> код мови ML Kit
+// Мова перекладу: код, назва рідною мовою (для списку) і англійська назва (для запиту до моделі)
+data class TranslationLanguage(
+    val code: String,
+    val nativeName: String,
+    val englishName: String
+)
+
 object TranslationLanguages {
-    val all: List<Pair<String, String>> = listOf(
-        "Англійська" to TranslateLanguage.ENGLISH,
-        "Українська" to TranslateLanguage.UKRAINIAN,
-        "Польська" to TranslateLanguage.POLISH,
-        "Німецька" to TranslateLanguage.GERMAN,
-        "Французька" to TranslateLanguage.FRENCH,
-        "Іспанська" to TranslateLanguage.SPANISH,
-        "Італійська" to TranslateLanguage.ITALIAN,
-        "Португальська" to TranslateLanguage.PORTUGUESE
+    val all: List<TranslationLanguage> = listOf(
+        TranslationLanguage("en", "English", "English"),
+        TranslationLanguage("uk", "Українська", "Ukrainian"),
+        TranslationLanguage("pl", "Polski", "Polish"),
+        TranslationLanguage("de", "Deutsch", "German"),
+        TranslationLanguage("fr", "Français", "French"),
+        TranslationLanguage("es", "Español", "Spanish"),
+        TranslationLanguage("it", "Italiano", "Italian"),
+        TranslationLanguage("pt", "Português", "Portuguese")
     )
 }
 
@@ -30,7 +35,7 @@ data class TranslatedText(
     val fullText: String?
 )
 
-// Переклад на самому телефоні (Google ML Kit): мовна модель завантажується один раз,
+// Офлайн-переклад на самому телефоні (Google ML Kit): мовна модель завантажується один раз,
 // після цього переклад працює без інтернету
 class ArticleTranslator {
 

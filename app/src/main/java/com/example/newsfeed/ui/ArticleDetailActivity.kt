@@ -20,8 +20,10 @@ import androidx.core.content.IntentCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
+import com.example.newsfeed.BuildConfig
 import com.example.newsfeed.R
 import com.example.newsfeed.data.Article
+import com.example.newsfeed.data.TranslationEngine
 import com.example.newsfeed.data.TranslationLanguages
 import java.io.File
 
@@ -98,8 +100,9 @@ class ArticleDetailActivity : AppCompatActivity() {
             }
         }
 
-        // списки вибору мов: з якої і на яку перекладати
-        val languageNames = TranslationLanguages.all.map { it.first }
+        // списки вибору мов: назви рідною мовою (English, Українська, Polski, Deutsch...)
+        val languages = TranslationLanguages.all
+        val languageNames = languages.map { it.nativeName }
         val spinnerAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, languageNames)
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         sourceSpinner.adapter = spinnerAdapter
@@ -117,8 +120,8 @@ class ArticleDetailActivity : AppCompatActivity() {
                 viewModel.translate(
                     article,
                     savedCopy,
-                    TranslationLanguages.all[viewModel.sourceIndex].second,
-                    TranslationLanguages.all[viewModel.targetIndex].second
+                    languages[viewModel.sourceIndex],
+                    languages[viewModel.targetIndex]
                 )
             }
         }
@@ -206,19 +209,27 @@ class ArticleDetailActivity : AppCompatActivity() {
                 translateButton.text = "Перекладаємо…"
                 translateButton.isEnabled = false
                 translateStatus.text =
-                    "Перекладаємо… Під час першого перекладу цією мовою завантажується мовна модель (потрібен інтернет), це може тривати хвилину."
+                    "Перекладаємо… Якщо онлайн-переклад недоступний, для офлайн-перекладу вперше завантажується мовна модель (потрібен інтернет)."
                 translateStatus.visibility = View.VISIBLE
             }
             is TranslationState.Done -> {
                 translateButton.text = "Показати оригінал"
                 translateButton.isEnabled = true
-                if (state.result.fullText == null) {
-                    translateStatus.text =
-                        "Перекладено заголовок і короткий опис. Збережи статтю, щоб перекласти й повний текст."
-                    translateStatus.visibility = View.VISIBLE
-                } else {
-                    translateStatus.visibility = View.GONE
+                val engineNote = when {
+                    state.engine == TranslationEngine.ONLINE ->
+                        "Переклад виконано онлайн (Gemini)."
+                    BuildConfig.GEMINI_API_KEY.isBlank() ->
+                        "Переклад виконано на телефоні (офлайн, менш точний). Для точнішого перекладу додай ключ Gemini у local.properties."
+                    else ->
+                        "Онлайн-переклад зараз недоступний (немає інтернету або вичерпано ліміт), тому використано офлайн-переклад на телефоні, він менш точний."
                 }
+                val fullTextNote = if (state.result.fullText == null) {
+                    " Перекладено заголовок і короткий опис. Збережи статтю, щоб перекласти й повний текст."
+                } else {
+                    ""
+                }
+                translateStatus.text = engineNote + fullTextNote
+                translateStatus.visibility = View.VISIBLE
             }
             is TranslationState.Error -> {
                 translateButton.text = "Перекласти"

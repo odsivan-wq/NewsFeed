@@ -6,8 +6,9 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.newsfeed.data.Article
-import com.example.newsfeed.data.ArticleTranslator
 import com.example.newsfeed.data.SavedArticlesRepository
+import com.example.newsfeed.data.TranslationLanguage
+import com.example.newsfeed.data.TranslationService
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -15,7 +16,7 @@ import kotlinx.coroutines.launch
 class DetailViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = SavedArticlesRepository.get(application)
-    private val translator = ArticleTranslator()
+    private val translator = TranslationService()
 
     // посилання статей, текст яких зараз завантажується
     val downloading: LiveData<Set<String>> = repository.downloading
@@ -41,29 +42,29 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
     fun translate(
         article: Article,
         savedCopy: Article?,
-        sourceLanguage: String,
-        targetLanguage: String
+        source: TranslationLanguage,
+        target: TranslationLanguage
     ) {
-        if (sourceLanguage == targetLanguage) {
+        if (source.code == target.code) {
             _translation.value = TranslationState.Error("Оберіть різні мови")
             return
         }
         _translation.value = TranslationState.Working
         viewModelScope.launch {
             try {
-                val result = translator.translate(
+                val outcome = translator.translate(
                     title = article.title,
                     description = article.description,
                     fullText = savedCopy?.fullText,
-                    sourceLanguage = sourceLanguage,
-                    targetLanguage = targetLanguage
+                    source = source,
+                    target = target
                 )
-                _translation.value = TranslationState.Done(result)
+                _translation.value = TranslationState.Done(outcome.text, outcome.engine)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 _translation.value = TranslationState.Error(
-                    "Не вдалося перекласти. Для першого перекладу цією мовою потрібен інтернет (завантаження мовної моделі)"
+                    "Не вдалося перекласти. Перевір інтернет: для офлайн-перекладу цією мовою спершу потрібно завантажити мовну модель"
                 )
             }
         }

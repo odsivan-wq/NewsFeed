@@ -16,6 +16,8 @@ import com.example.newsfeed.ui.ArticleAdapter
 import com.example.newsfeed.ui.ArticleDetailActivity
 import com.example.newsfeed.ui.FeedState
 import com.example.newsfeed.ui.FeedViewModel
+import com.example.newsfeed.ui.ThemeSettings
+import com.google.android.material.materialswitch.MaterialSwitch
 import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
@@ -111,6 +113,7 @@ class MainActivity : AppCompatActivity() {
 
         val tabs = findViewById<TabLayout>(R.id.tabs)
         val list = findViewById<RecyclerView>(R.id.list)
+        val themeSwitch = findViewById<MaterialSwitch>(R.id.themeSwitch)
         swipe = findViewById(R.id.swipe)
         messageBox = findViewById(R.id.messageBox)
         messageText = findViewById(R.id.messageText)
@@ -118,6 +121,12 @@ class MainActivity : AppCompatActivity() {
 
         list.layoutManager = LinearLayoutManager(this)
         list.adapter = adapter
+
+        // перемикач теми: спершу ставимо стан, потім слухача (інакше екран перезапуститься двічі)
+        themeSwitch.isChecked = ThemeSettings.isDark(this)
+        themeSwitch.setOnCheckedChangeListener { _, checked ->
+            ThemeSettings.setDark(this, checked)
+        }
 
         // вкладки: спочатку «Збережені» з іконкою, потім усі категорії
         tabs.addTab(tabs.newTab().setText("Збережені").setIcon(R.drawable.ic_bookmark))

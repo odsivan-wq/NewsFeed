@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-// читаємо ключ з local.properties (цей файл не потрапляє на GitHub)
+// читаємо ключі з local.properties (цей файл не потрапляє на GitHub)
 val localProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
@@ -26,8 +26,9 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // ключ NewsAPI стає доступним у коді як BuildConfig.NEWS_API_KEY
+        // ключі стають доступними в коді як BuildConfig.NEWS_API_KEY і BuildConfig.GEMINI_API_KEY
         buildConfigField("String", "NEWS_API_KEY", "\"${localProps.getProperty("NEWS_API_KEY", "")}\"")
+        buildConfigField("String", "GEMINI_API_KEY", "\"${localProps.getProperty("GEMINI_API_KEY", "")}\"")
     }
 
     buildFeatures {

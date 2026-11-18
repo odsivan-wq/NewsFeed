@@ -63,9 +63,7 @@ class DetailViewModel(application: Application) : AndroidViewModel(application) 
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                _translation.value = TranslationState.Error(
-                    "Не вдалося перекласти. Перевір інтернет: для офлайн-перекладу цією мовою спершу потрібно завантажити мовну модель"
-                )
+                _translation.value = TranslationState.Error("Не вдалося перекласти. Перевір інтернет")
             }
         }
     }

@@ -80,15 +80,6 @@
                 android:text="Перекласти" />
 
             <TextView
-                android:id="@+id/translateStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:textSize="13sp"
-                android:textStyle="italic"
-                android:visibility="gone" />
-
-            <TextView
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -100,8 +91,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:textSize="13sp"
-                android:textStyle="italic"
+                android:textSize="14sp"
                 android:visibility="gone" />
 
             <TextView
@@ -113,14 +103,6 @@
                 android:textIsSelectable="true"
                 android:textSize="16sp"
                 android:visibility="gone" />
-
-            <TextView
-                android:id="@+id/hint"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="Це короткий опис від NewsAPI. Збережи статтю, і повний текст стане доступним без інтернету."
-                android:textSize="13sp" />
 
             <Button
                 android:id="@+id/saveButton"
@@ -134,7 +116,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
-                android:text="Спробувати завантажити текст ще раз"
+                android:text="Не вдалося завантажити текст. Спробувати ще раз"
                 android:visibility="gone" />
 
             <Button

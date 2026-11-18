@@ -20,10 +20,8 @@ import androidx.core.content.IntentCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.bumptech.glide.Glide
-import com.example.newsfeed.BuildConfig
 import com.example.newsfeed.R
 import com.example.newsfeed.data.Article
-import com.example.newsfeed.data.TranslationEngine
 import com.example.newsfeed.data.TranslationLanguages
 import java.io.File
 
@@ -37,13 +35,11 @@ class ArticleDetailActivity : AppCompatActivity() {
     private lateinit var descriptionView: TextView
     private lateinit var statusText: TextView
     private lateinit var fullTextView: TextView
-    private lateinit var hint: TextView
     private lateinit var saveButton: Button
     private lateinit var retryButton: Button
     private lateinit var sourceSpinner: Spinner
     private lateinit var targetSpinner: Spinner
     private lateinit var translateButton: Button
-    private lateinit var translateStatus: TextView
 
     // що зараз відомо про статтю: збережена копія (null, якщо не збережена), завантаження, переклад
     private var savedCopy: Article? = null
@@ -74,13 +70,11 @@ class ArticleDetailActivity : AppCompatActivity() {
         descriptionView = findViewById(R.id.description)
         statusText = findViewById(R.id.statusText)
         fullTextView = findViewById(R.id.fullText)
-        hint = findViewById(R.id.hint)
         saveButton = findViewById(R.id.saveButton)
         retryButton = findViewById(R.id.retryButton)
         sourceSpinner = findViewById(R.id.sourceSpinner)
         targetSpinner = findViewById(R.id.targetSpinner)
         translateButton = findViewById(R.id.translateButton)
-        translateStatus = findViewById(R.id.translateStatus)
         val meta = findViewById<TextView>(R.id.meta)
         val backButton = findViewById<Button>(R.id.backButton)
         val openButton = findViewById<Button>(R.id.openButton)
@@ -136,6 +130,12 @@ class ArticleDetailActivity : AppCompatActivity() {
             render()
         }
         viewModel.translation.observe(this) { state ->
+            if (state is TranslationState.Error) {
+                // помилку показуємо коротким повідомленням і повертаємось до оригіналу
+                Toast.makeText(this, state.message, Toast.LENGTH_LONG).show()
+                viewModel.showOriginal()
+                return@observe
+            }
             translation = state
             render()
         }
@@ -168,74 +168,42 @@ class ArticleDetailActivity : AppCompatActivity() {
 
         when {
             saved == null -> {
-                hint.visibility = View.VISIBLE
                 statusText.visibility = View.GONE
                 fullTextView.visibility = View.GONE
                 retryButton.visibility = View.GONE
             }
             saved.fullText != null -> {
-                hint.visibility = View.GONE
-                statusText.text = "Повний текст збережено, він доступний без інтернету"
-                statusText.visibility = View.VISIBLE
+                statusText.visibility = View.GONE
                 fullTextView.text = shownFullText
                 fullTextView.visibility = View.VISIBLE
                 retryButton.visibility = View.GONE
             }
             isDownloading -> {
-                hint.visibility = View.GONE
-                statusText.text = "Завантажуємо повний текст для офлайн…"
+                statusText.text = "Повний текст завантажується…"
                 statusText.visibility = View.VISIBLE
                 fullTextView.visibility = View.GONE
                 retryButton.visibility = View.GONE
             }
             else -> {
-                hint.visibility = View.GONE
-                statusText.text =
-                    "Повний текст завантажити не вдалося (сайт не віддав текст). Збережено короткий опис."
-                statusText.visibility = View.VISIBLE
+                statusText.visibility = View.GONE
                 fullTextView.visibility = View.GONE
                 retryButton.visibility = View.VISIBLE
             }
         }
 
-        // блок перекладу: кнопка і повідомлення
-        when (val state = translation) {
-            is TranslationState.Idle -> {
-                translateButton.text = "Перекласти"
-                translateButton.isEnabled = true
-                translateStatus.visibility = View.GONE
-            }
+        // кнопка перекладу
+        when (translation) {
             is TranslationState.Working -> {
-                translateButton.text = "Перекладаємо…"
+                translateButton.text = "Перекладається…"
                 translateButton.isEnabled = false
-                translateStatus.text =
-                    "Перекладаємо… Якщо онлайн-переклад недоступний, для офлайн-перекладу вперше завантажується мовна модель (потрібен інтернет)."
-                translateStatus.visibility = View.VISIBLE
             }
             is TranslationState.Done -> {
                 translateButton.text = "Показати оригінал"
                 translateButton.isEnabled = true
-                val engineNote = when {
-                    state.engine == TranslationEngine.ONLINE ->
-                        "Переклад виконано онлайн (Gemini)."
-                    BuildConfig.GEMINI_API_KEY.isBlank() ->
-                        "Переклад виконано на телефоні (офлайн, менш точний). Для точнішого перекладу додай ключ Gemini у local.properties."
-                    else ->
-                        "Онлайн-переклад зараз недоступний (немає інтернету або вичерпано ліміт), тому використано офлайн-переклад на телефоні, він менш точний."
-                }
-                val fullTextNote = if (state.result.fullText == null) {
-                    " Перекладено заголовок і короткий опис. Збережи статтю, щоб перекласти й повний текст."
-                } else {
-                    ""
-                }
-                translateStatus.text = engineNote + fullTextNote
-                translateStatus.visibility = View.VISIBLE
             }
-            is TranslationState.Error -> {
+            else -> {
                 translateButton.text = "Перекласти"
                 translateButton.isEnabled = true
-                translateStatus.text = state.message
-                translateStatus.visibility = View.VISIBLE
             }
         }
     }
